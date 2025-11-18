@@ -1,0 +1,180 @@
+# SystemVerilog UVM Verification Project - Git Ignore Patterns
+# NVIDIA GPU Interconnect NoC Verification
+
+# ==============================================================================
+# Simulator Generated Files
+# ==============================================================================
+
+# VCS (Synopsys)
+*.vpd                    # VCS VPD dump files
+*.vcd                    # Value Change Dump files
+*.fsdb                   # Fast Signal Database (Verdi)
+*.log                    # Simulator log files
+*.key                    # VCS license key files
+simv                     # VCS compiled executable
+simv.daidir/             # VCS daidir directory
+csrc/                    # VCS C source directory
+*.daidir                 # VCS daidir files
+*.so                     # Shared object files
+*.o                      # Object files
+uvm.h                    # Auto-generated UVM header
+vcs.log                  # VCS log file
+.vcs_lib_lock            # VCS library lock file
+
+# Questa/ModelSim (Mentor Graphics)
+*.vstf                   # Questa waveform files
+*.wlf                    # Waveform log file
+*.wdb                    # Waveform database
+*.do                     # Temporary do files (keep project .do files)
+*.mpf                    # ModelSim project file
+*.ini                    # Questa ini files (except questa.ini template)
+work/                    # Questa work library
+modelsim.ini             # Auto-generated modelsim.ini
+transcript               # ModelSim transcript
+vsim.wlf                 # Questa simulation log
+vsim.wlf.lock            # Questa lock file
+*.log                    # Questa log files
+
+# Xcelium (Cadence)
+*.shm/                   # Xcelium shared memory directory
+*.dsn                    # Xcelium design snapshot
+*.log                    # Xcelium log files
+xrun.log                 # Xcelium run log
+xcelium.d                # Xcelium directory
+xrun.history             # Xcelium history
+xrun.key                 # Xcelium key file
+
+# Riviera-PRO (Aldec)
+*.asdb                   # Riviera database
+*.log                    # Riviera log files
+aldec.log                # Aldec log file
+
+# ==============================================================================
+# Coverage Files
+# ==============================================================================
+*.ucm                    # Unified Coverage Model
+*.ucd                    # Unified Coverage Database
+*.vdb                    # VCS coverage database
+*.cov                    # Coverage files
+coverage/                # Coverage output directory
+*.html                   # Coverage HTML reports (regenerated)
+*.xml                    # Coverage XML reports (regenerated)
+
+# ==============================================================================
+# Build Artifacts
+# ==============================================================================
+*.o                      # Object files
+*.a                      # Archive files
+*.so                     # Shared libraries
+*.exe                    # Executable files
+*.dll                    # Dynamic link libraries
+*.obj                    # Object files (Windows)
+
+# ==============================================================================
+# IDE and Editor Files
+# ==============================================================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# Cursor
+.cursor/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+.\#*
+*.elc
+auto-save-list/
+
+# ==============================================================================
+# OS Generated Files
+# ==============================================================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ==============================================================================
+# Temporary and Backup Files
+# ==============================================================================
+*.bak
+*.backup
+*.tmp
+*.temp
+*.old
+*.orig
+*.save
+*.swp
+*.swo
+
+# ==============================================================================
+# Documentation Build Artifacts
+# ==============================================================================
+docs/_build/
+docs/.doctrees/
+*.pdf                    # Generated PDFs (keep source docs)
+
+# ==============================================================================
+# Test Results and Reports
+# ==============================================================================
+test_results/            # Test result directories
+reports/                 # Generated reports (regenerated)
+*.rpt                    # Report files
+*.out                    # Output files
+
+# ==============================================================================
+# Environment and Configuration
+# ==============================================================================
+.env                     # Environment variables (may contain secrets)
+.env.local
+*.local                  # Local configuration overrides
+
+# ==============================================================================
+# Project Specific
+# ==============================================================================
+# Keep these patterns but ignore generated content
+# *.sv - Keep source files
+# *.svh - Keep header files
+# *.v - Keep Verilog files
+# *.vhd - Keep VHDL files
+
+# Simulation output directories (regenerated)
+sim_output/
+sim_results/
+run_logs/
+
+# Formal verification outputs
+formal_output/
+formal_results/
+
+# ==============================================================================
+# License and Legal
+# ==============================================================================
+# Note: LICENSE file should be tracked, but ignore license key files
+*.lic                    # License key files (if any)
+license.dat              # License data files
+

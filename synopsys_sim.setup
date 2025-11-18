@@ -1,0 +1,127 @@
+# ==============================================================================
+# Synopsys VCS Simulation Setup File
+# NVIDIA GPU Interconnect NoC Verification
+# ==============================================================================
+#
+# This file configures VCS (Synopsys) simulation environment settings.
+# It defines library mappings, search paths, and default options.
+#
+# Usage:
+#   export SYNOPSYS_SIM_SETUP=/path/to/synopsys_sim.setup
+#   vcs [options] ...
+#
+# ==============================================================================
+
+# ==============================================================================
+# Library Mappings
+# ==============================================================================
+#
+# Format: <logical_name> : <physical_path>
+# Logical names are used in the design, physical paths point to compiled libraries
+#
+
+# Work library (default compilation target)
+WORK > DEFAULT
+
+# UVM library (if using standalone UVM)
+# Uncomment and adjust path if using UVM library separate from VCS installation
+# UVM : ${VCS_HOME}/etc/uvm-1.2
+
+# Standard cell libraries (if needed)
+# STD_CELLS : /path/to/std_cells
+
+# IP libraries (if needed)
+# IP_LIB : /path/to/ip_library
+
+# ==============================================================================
+# Default Library
+# ==============================================================================
+#
+# Specifies the default library for compilation when no library is specified
+#
+DEFAULT : WORK
+
+# ==============================================================================
+# Search Paths
+# ==============================================================================
+#
+# Directories to search for files referenced with +incdir+
+# These are in addition to paths specified on the command line
+#
+
+# Project include directories
++incdir+${PROJECT_ROOT}/rtl
++incdir+${PROJECT_ROOT}/tb
++incdir+${PROJECT_ROOT}/pkg
++incdir+${PROJECT_ROOT}/tests
++incdir+${PROJECT_ROOT}/config
+
+# UVM include directory (if UVM_HOME is set)
++incdir+${UVM_HOME}/src
+
+# ==============================================================================
+# Default Options
+# ==============================================================================
+#
+# Default compilation and simulation options
+# These can be overridden on the command line
+#
+
+# Enable SystemVerilog
+-sverilog
+
+# Enable UVM
+-ntb_opts uvm-1.2
+
+# Timescale (can be overridden per module)
+-timescale=1ns/1ps
+
+# ==============================================================================
+# Coverage Options
+# ==============================================================================
+#
+# Default coverage options (can be overridden)
+# -cm line+cond+fsm+branch+tgl : Enable all coverage types
+#
+
+# ==============================================================================
+# Debug Options
+# ==============================================================================
+#
+# Enable debugging features
+# -debug_access+all : Enable full debug access
+# -debug_region=cell+lib : Debug region settings
+#
+
+# ==============================================================================
+# Performance Options
+# ==============================================================================
+#
+# Optimization and performance settings
+# -full64 : Use 64-bit mode
+# -lca : License Check Avoidance (for batch jobs)
+#
+
+# ==============================================================================
+# File Extensions
+# ==============================================================================
+#
+# File extension mappings (optional, VCS auto-detects)
+# .sv : SystemVerilog
+# .svh : SystemVerilog header
+# .v : Verilog
+# .vhd : VHDL
+#
+
+# ==============================================================================
+# Notes
+# ==============================================================================
+#
+# 1. Environment variables like ${PROJECT_ROOT} are expanded at runtime
+# 2. Paths can be absolute or relative to the setup file location
+# 3. Options specified here are defaults and can be overridden
+# 4. Library mappings persist across compilation sessions
+# 5. This file is read automatically if SYNOPSYS_SIM_SETUP is set
+#
+# ==============================================================================
+
