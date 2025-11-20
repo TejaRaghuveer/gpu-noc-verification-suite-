@@ -100,17 +100,21 @@ VCS_OPTS       := -full64 \
                   -o $(BUILD_DIR)/simv
 
 # VCS coverage options
-VCS_COV_OPTS   := -cm line+cond+fsm+branch+tgl \
-                  -cm_name $(TEST)_$(SEED) \
-                  -cm_dir $(COV_DIR)/$(TEST)_$(SEED)
+# Note: Do not specify -cm_dir at compile time since TEST/SEED are simulation-time parameters
+# The -cm_dir is specified at simulation time (in VCS_SIM_COV_OPTS) to avoid directory mismatch
+# Coverage from multiple test runs will be merged using urg tool in coverage_report target
+VCS_COV_OPTS   := -cm line+cond+fsm+branch+tgl
 
 # VCS simulation options
+# Note: Coverage options are added conditionally based on COVERAGE variable
+# Coverage instrumentation must be enabled at compile time for simulation coverage to work
 VCS_SIM_OPTS   := +UVM_VERBOSITY=$(UVM_VERBOSITY) \
                   +UVM_TESTNAME=$(TEST) \
                   +ntb_random_seed=$(SEED) \
-                  -l $(LOG_DIR)/sim_$(TEST)_$(SEED).log \
-                  -cm line+cond+fsm+branch+tgl \
-                  -cm_dir $(COV_DIR)/$(TEST)_$(SEED)
+                  -l $(LOG_DIR)/sim_$(TEST)_$(SEED).log
+# Coverage options added conditionally - only if COVERAGE=yes
+VCS_SIM_COV_OPTS := -cm line+cond+fsm+branch+tgl \
+                    -cm_dir $(COV_DIR)/$(TEST)_$(SEED)
 
 # Questa (Mentor Graphics) options
 QUESTA_OPTS    := -64 \
@@ -129,13 +133,16 @@ QUESTA_COV_OPTS := +cover=cfst \
                    -coveroptions coverstore
 
 # Questa simulation options
+# Note: Coverage options are added conditionally based on COVERAGE variable
+# Coverage instrumentation must be enabled at compile time for simulation coverage to work
 QUESTA_SIM_OPTS := -voptargs="+acc" \
                    +UVM_VERBOSITY=$(UVM_VERBOSITY) \
                    +UVM_TESTNAME=$(TEST) \
                    +ntb_random_seed=$(SEED) \
-                   -l $(LOG_DIR)/sim_$(TEST)_$(SEED).log \
-                   -coverage \
-                   -voptargs="+cover=cfst"
+                   -l $(LOG_DIR)/sim_$(TEST)_$(SEED).log
+# Coverage options added conditionally - only if COVERAGE=yes
+QUESTA_SIM_COV_OPTS := -coverage \
+                       -voptargs="+cover=cfst"
 
 # ==============================================================================
 # Default Target
@@ -195,6 +202,8 @@ compile: $(BUILD_DIR) $(LOG_DIR) $(COV_DIR)
 	@echo "=============================================================================="
 	@echo "Compiling with $(SIMULATOR)..."
 	@echo "=============================================================================="
+	@# Store coverage state for simulation-time checking
+	@echo "$(COVERAGE)" > $(BUILD_DIR)/.coverage_state
 ifeq ($(SIMULATOR),vcs)
 	@which vcs > /dev/null || (echo "Error: VCS not found. Please set up your environment." && exit 1)
 	vcs $(VCS_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_COV_OPTS),) \
@@ -218,35 +227,77 @@ endif
 .PHONY: sim_simple sim_random sim_stress sim_formal
 
 sim_simple: compile
+	@# Check coverage consistency: coverage must be enabled at compile time if enabled at simulation time
+	@if [ "$(COVERAGE)" = "yes" ]; then \
+		if [ ! -f $(BUILD_DIR)/.coverage_state ]; then \
+			echo "ERROR: Coverage state file not found. Code may not be compiled with coverage."; \
+			echo "       Recompile with: make compile COVERAGE=yes"; \
+			exit 1; \
+		fi; \
+		COMPILED_COV=$$(cat $(BUILD_DIR)/.coverage_state); \
+		if [ "$$COMPILED_COV" != "yes" ]; then \
+			echo "ERROR: Coverage enabled at simulation (COVERAGE=yes) but code was compiled without coverage."; \
+			echo "       Coverage instrumentation must be enabled at compile time. Recompile with: make compile COVERAGE=yes"; \
+			exit 1; \
+		fi; \
+	fi
 	@echo "=============================================================================="
 	@echo "Running simple test..."
 	@echo "=============================================================================="
 ifeq ($(SIMULATOR),vcs)
-	$(BUILD_DIR)/simv $(VCS_SIM_OPTS) +UVM_TESTNAME=simple_test
+	$(BUILD_DIR)/simv $(VCS_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_SIM_COV_OPTS),) +UVM_TESTNAME=simple_test
 else ifeq ($(SIMULATOR),questa)
-	vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=simple_test $(QUESTA_SIM_OPTS)
+	vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=simple_test $(QUESTA_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_SIM_COV_OPTS),)
 endif
 	@echo "Simulation complete. Log: $(LOG_DIR)/sim_simple_$(SEED).log"
 
 sim_random: compile
+	@# Check coverage consistency: coverage must be enabled at compile time if enabled at simulation time
+	@if [ "$(COVERAGE)" = "yes" ]; then \
+		if [ ! -f $(BUILD_DIR)/.coverage_state ]; then \
+			echo "ERROR: Coverage state file not found. Code may not be compiled with coverage."; \
+			echo "       Recompile with: make compile COVERAGE=yes"; \
+			exit 1; \
+		fi; \
+		COMPILED_COV=$$(cat $(BUILD_DIR)/.coverage_state); \
+		if [ "$$COMPILED_COV" != "yes" ]; then \
+			echo "ERROR: Coverage enabled at simulation (COVERAGE=yes) but code was compiled without coverage."; \
+			echo "       Coverage instrumentation must be enabled at compile time. Recompile with: make compile COVERAGE=yes"; \
+			exit 1; \
+		fi; \
+	fi
 	@echo "=============================================================================="
 	@echo "Running random test (seed=$(SEED))..."
 	@echo "=============================================================================="
 ifeq ($(SIMULATOR),vcs)
-	$(BUILD_DIR)/simv $(VCS_SIM_OPTS) +UVM_TESTNAME=random_test
+	$(BUILD_DIR)/simv $(VCS_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_SIM_COV_OPTS),) +UVM_TESTNAME=random_test
 else ifeq ($(SIMULATOR),questa)
-	vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=random_test $(QUESTA_SIM_OPTS)
+	vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=random_test $(QUESTA_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_SIM_COV_OPTS),)
 endif
 	@echo "Simulation complete. Log: $(LOG_DIR)/sim_random_$(SEED).log"
 
 sim_stress: compile
+	@# Check coverage consistency: coverage must be enabled at compile time if enabled at simulation time
+	@if [ "$(COVERAGE)" = "yes" ]; then \
+		if [ ! -f $(BUILD_DIR)/.coverage_state ]; then \
+			echo "ERROR: Coverage state file not found. Code may not be compiled with coverage."; \
+			echo "       Recompile with: make compile COVERAGE=yes"; \
+			exit 1; \
+		fi; \
+		COMPILED_COV=$$(cat $(BUILD_DIR)/.coverage_state); \
+		if [ "$$COMPILED_COV" != "yes" ]; then \
+			echo "ERROR: Coverage enabled at simulation (COVERAGE=yes) but code was compiled without coverage."; \
+			echo "       Coverage instrumentation must be enabled at compile time. Recompile with: make compile COVERAGE=yes"; \
+			exit 1; \
+		fi; \
+	fi
 	@echo "=============================================================================="
 	@echo "Running stress test..."
 	@echo "=============================================================================="
 ifeq ($(SIMULATOR),vcs)
-	$(BUILD_DIR)/simv $(VCS_SIM_OPTS) +UVM_TESTNAME=stress_test TIMEOUT=$(TIMEOUT)
+	$(BUILD_DIR)/simv $(VCS_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_SIM_COV_OPTS),) +UVM_TESTNAME=stress_test TIMEOUT=$(TIMEOUT)
 else ifeq ($(SIMULATOR),questa)
-	vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=stress_test $(QUESTA_SIM_OPTS)
+	vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=stress_test $(QUESTA_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_SIM_COV_OPTS),)
 endif
 	@echo "Simulation complete. Log: $(LOG_DIR)/sim_stress_$(SEED).log"
 

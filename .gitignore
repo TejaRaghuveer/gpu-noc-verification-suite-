@@ -28,6 +28,7 @@ vcs.log                  # VCS log file
 *.do                     # Temporary do files (keep project .do files)
 *.mpf                    # ModelSim project file
 *.ini                    # Questa ini files (except questa.ini template)
+!questa.ini              # Exception: questa.ini template should be tracked
 work/                    # Questa work library
 modelsim.ini             # Auto-generated modelsim.ini
 transcript               # ModelSim transcript
