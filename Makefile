@@ -202,19 +202,33 @@ compile: $(BUILD_DIR) $(LOG_DIR) $(COV_DIR)
 	@echo "=============================================================================="
 	@echo "Compiling with $(SIMULATOR)..."
 	@echo "=============================================================================="
-	@# Store coverage state for simulation-time checking
-	@echo "$(COVERAGE)" > $(BUILD_DIR)/.coverage_state
 ifeq ($(SIMULATOR),vcs)
 	@which vcs > /dev/null || (echo "Error: VCS not found. Please set up your environment." && exit 1)
 	vcs $(VCS_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_COV_OPTS),) \
-	    $(ALL_FILES) 2>&1 | tee $(LOG_DIR)/compile.log
-	@echo "Compilation complete. Log: $(LOG_DIR)/compile.log"
+	    $(ALL_FILES) 2>&1 | tee $(LOG_DIR)/compile.log; \
+	COMPILE_STATUS=$$?; \
+	if [ $$COMPILE_STATUS -eq 0 ]; then \
+		echo "Compilation complete. Log: $(LOG_DIR)/compile.log"; \
+		echo "$(COVERAGE)" > $(BUILD_DIR)/.coverage_state; \
+	else \
+		echo "Compilation failed. Log: $(LOG_DIR)/compile.log"; \
+		rm -f $(BUILD_DIR)/.coverage_state; \
+		exit $$COMPILE_STATUS; \
+	fi
 else ifeq ($(SIMULATOR),questa)
 	@which vlog > /dev/null || (echo "Error: Questa not found. Please set up your environment." && exit 1)
 	vlib work
 	vlog $(QUESTA_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_COV_OPTS),) \
-	     $(ALL_FILES) 2>&1 | tee $(LOG_DIR)/compile.log
-	@echo "Compilation complete. Log: $(LOG_DIR)/compile.log"
+	     $(ALL_FILES) 2>&1 | tee $(LOG_DIR)/compile.log; \
+	COMPILE_STATUS=$$?; \
+	if [ $$COMPILE_STATUS -eq 0 ]; then \
+		echo "Compilation complete. Log: $(LOG_DIR)/compile.log"; \
+		echo "$(COVERAGE)" > $(BUILD_DIR)/.coverage_state; \
+	else \
+		echo "Compilation failed. Log: $(LOG_DIR)/compile.log"; \
+		rm -f $(BUILD_DIR)/.coverage_state; \
+		exit $$COMPILE_STATUS; \
+	fi
 else
 	@echo "Error: Unsupported simulator '$(SIMULATOR)'. Use 'vcs' or 'questa'."
 	@exit 1
