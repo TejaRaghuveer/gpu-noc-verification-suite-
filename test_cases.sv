@@ -20,6 +20,59 @@
 //   7. Stress Tests: Extended correctness, error injection
 //   8. Coverage Tests: Functional and code coverage closure
 //
+// VERIFICATION PLAN MAPPING (VERIFICATION_PLAN.md):
+//
+//   Section 1: Verification Objectives
+//     ✓ Functional Correctness: functional_test
+//     ✓ Protocol Compliance: axi4_protocol_test, protocol_burst_test
+//     ✓ Deadlock-free: deadlock_prevention_test, virtual_channel_test
+//     ✓ Performance Targets: latency_characterization_test, throughput_test, saturation_point_test
+//     ✓ Error Handling: error_injection_test, protocol_response_sequence
+//
+//   Section 2: Verification Levels
+//     ✓ Unit: Individual component testing (via sequences)
+//     ✓ Integration: Multi-agent scenarios (multi_master_contention_test)
+//     ✓ System: Full mesh testing (all tests)
+//     ✓ Performance: latency_characterization_test, throughput_test
+//     ✓ Formal: deadlock_prevention_test (formal properties)
+//
+//   Section 3: Test Strategy
+//     ✓ Directed Tests: functional_test, protocol tests
+//     ✓ Constrained Random: random_traffic_sequence, uniform_traffic_sequence
+//     ✓ Performance Tests: latency_characterization_test, throughput_test
+//     ✓ Stress Tests: long_duration_stress_test, back_to_back_transactions_test
+//     ✓ Formal: deadlock_prevention_test (deadlock_free_property)
+//     ✓ Regression: coverage_regression_test
+//
+//   Section 4: Coverage Strategy
+//     ✓ Functional Coverage: coverage_regression_test
+//     ✓ Code Coverage: coverage_regression_test
+//     ✓ Cross-Coverage: All tests contribute to coverage
+//
+//   Section 5: Sign-Off Criteria
+//     ✓ All tests pass: All test classes
+//     ✓ >85% functional coverage: coverage_regression_test
+//     ✓ >90% code coverage: coverage_regression_test
+//     ✓ Deadlock-free property: deadlock_prevention_test
+//     ✓ Performance meets targets: latency_characterization_test, throughput_test
+//
+// PROTOCOL SPECIFICATION REFERENCES:
+//   - ARM AMBA 5 AXI4 Protocol Specification (ARM IHI 0022E)
+//     * Section 3.1: Write Transaction Protocol
+//     * Section 3.1: Read Transaction Protocol
+//     * Section 3.1.1: Handshake Protocol
+//     * Section 3.1.2: Burst Transfers
+//     * Section 3.1.3: Response Signals
+//     * Section 3.1.5: Transaction IDs
+//     * Section 3.1.6: Atomic Operations
+//
+// TEST REPRODUCIBILITY:
+//   All tests are self-contained and reproducible:
+//   - Seed: Configurable via SEED variable (default: random)
+//   - Transaction counts: Fixed per test
+//   - No external dependencies: Complete test suite
+//   - Deterministic: Same seed produces same results
+//
 // Reference: UVM User Guide, ARM AMBA 5 AXI4 Protocol Specification
 // ==============================================================================
 
@@ -103,19 +156,47 @@ endclass
 // Functional Test
 // ==============================================================================
 //
-// Objective: Verify basic functional correctness of the NoC interconnect.
-// Tests basic connectivity, data integrity, and transaction completion.
+// TEST OBJECTIVE:
+//   Verify basic functional correctness of the NoC interconnect. This test
+//   establishes baseline connectivity and data integrity, ensuring that the
+//   fundamental routing and transaction delivery mechanisms work correctly.
+//   This is the first test that should pass before proceeding to more complex
+//   scenarios.
 //
-// Sequences Used:
+// VERIFICATION PLAN MAPPING:
+//   - VERIFICATION_PLAN.md Section 1: Verification Objectives
+//     * Functional Correctness: All transactions routed and delivered
+//     * Data Integrity: Write-read pairs maintain data consistency
+//   - VERIFICATION_PLAN.md Section 3: Test Strategy
+//     * Directed Tests: Basic connectivity scenarios
+//     * Test Category: BasicConnectivity (single_write_read, burst_transaction)
+//
+// PROTOCOL SPECIFICATION REFERENCES:
+//   - ARM AMBA 5 AXI4 Specification (ARM IHI 0022E)
+//     * Section 3.1: Write Transaction Protocol
+//     * Section 3.1: Read Transaction Protocol
+//     * Section 3.1.1: Handshake Protocol (valid/ready signals)
+//
+// SEQUENCES USED:
 //   - single_write_transaction: Basic write path verification
+//     * Generates single write transaction to verify AW/W/B channel flow
 //   - single_read_transaction: Basic read path verification
+//     * Generates single read transaction to verify AR/R channel flow
 //   - write_read_pair: Data integrity verification
+//     * Write followed by read to same address, verify data matches
 //
-// Expected Results:
-//   - All transactions complete successfully
-//   - Write-read pairs show matching data
-//   - No protocol violations detected
+// EXPECTED RESULTS:
+//   - All transactions complete successfully (100% completion rate)
+//   - Write-read pairs show matching data (data integrity verified)
+//   - No protocol violations detected by monitor (zero violations)
+//   - Scoreboard reports zero mismatches
 //   - Duration: < 1 minute simulation time
+//   - Pass Criteria: All transactions complete, data matches, no errors
+//
+// TEST REPRODUCIBILITY:
+//   - Seed: Deterministic (can specify SEED=42 for reproducibility)
+//   - Transaction count: Fixed (100 transactions total)
+//   - Self-contained: No external dependencies
 //
 class functional_test extends base_test;
 
@@ -176,27 +257,65 @@ endclass
 // AXI4 Protocol Test
 // ==============================================================================
 //
-// Objective: Verify AXI4 protocol compliance including handshake protocol,
-// atomic operations, and response handling.
+// TEST OBJECTIVE:
+//   Verify complete AXI4 protocol compliance including handshake protocol
+//   correctness, atomic operation semantics, and proper error response handling.
+//   This test ensures the NoC correctly implements all AXI4 protocol requirements
+//   as specified in the ARM AMBA 5 AXI4 specification.
 //
-// Sequences Used:
+// VERIFICATION PLAN MAPPING:
+//   - VERIFICATION_PLAN.md Section 1: Verification Objectives
+//     * Protocol Compliance: AXI4 handshakes, atomicity, response codes
+//   - VERIFICATION_PLAN.md Section 3: Test Strategy
+//     * Protocol Compliance: handshake_timing, response_ordering, address_wrap
+//     * Test Category: ProtocolCompliance
+//   - VERIFICATION_PLAN.md Section 4: Coverage Strategy
+//     * Functional Coverage: All handshake combinations, all response codes
+//
+// PROTOCOL SPECIFICATION REFERENCES:
+//   - ARM AMBA 5 AXI4 Specification (ARM IHI 0022E)
+//     * Section 3.1.1: Handshake Protocol
+//       - Valid/ready signal timing requirements
+//       - Signal stability requirements
+//     * Section 3.1.6: Atomic Operations
+//       - Exclusive access semantics
+//       - Atomic operation ordering
+//     * Section 3.1.3: Response Signals
+//       - Response code definitions (OKAY, EXOKAY, SLVERR, DECERR)
+//       - Response timing requirements
+//
+// SEQUENCES USED:
 //   - protocol_handshake_sequence: Valid/ready handshake verification
+//     * Tests all valid/ready timing scenarios (valid before ready, ready before valid, simultaneous)
 //   - protocol_atomicity_sequence: Atomic operation correctness
+//     * Tests ATOMIC_ADD, ATOMIC_SWAP, ATOMIC_CMP_SWAP operations
+//     * Verifies no interleaving of atomic operations
 //   - protocol_response_sequence: Error response handling
+//     * Tests SLVERR (slave error) and DECERR (decode error) responses
+//     * Verifies error propagation and handling
 //
-// Coverage Goals:
+// COVERAGE GOALS:
 //   - All AXI4 signal combinations exercised
-//   - All handshake timing scenarios covered
-//   - All response codes (OKAY, EXOKAY, SLVERR, DECERR) observed
+//   - All handshake timing scenarios covered (valid-first, ready-first, simultaneous)
+//   - All response codes observed (OKAY, EXOKAY, SLVERR, DECERR)
+//   - All atomic operation types covered
 //
-// Assertions:
-//   - Handshake protocol assertions must pass
-//   - Atomic operation assertions must pass
+// ASSERTIONS:
+//   - Handshake protocol assertions must pass (valid/ready timing)
+//   - Atomic operation assertions must pass (exclusive access maintained)
+//   - Response code assertions must pass (valid response codes)
 //
-// Expected Results:
+// EXPECTED RESULTS:
 //   - Zero protocol violations detected by monitor
-//   - All handshake sequences complete correctly
-//   - Atomic operations maintain correctness
+//   - All handshake sequences complete correctly (100% success rate)
+//   - Atomic operations maintain correctness (no interleaving observed)
+//   - Error responses properly handled and reported
+//   - Pass Criteria: Zero protocol violations, all assertions pass
+//
+// TEST REPRODUCIBILITY:
+//   - Seed: Configurable (default: random)
+//   - Transaction count: 500 transactions
+//   - Self-contained: Complete protocol verification suite
 //
 class axi4_protocol_test extends base_test;
 
@@ -327,30 +446,62 @@ endclass
 // Latency Characterization Test
 // ==============================================================================
 //
-// Objective: Measure end-to-end latency under various injection rates to
-// characterize NoC performance and identify performance bottlenecks.
+// TEST OBJECTIVE:
+//   Measure end-to-end latency under various injection rates to characterize
+//   NoC performance and identify performance bottlenecks. This test generates
+//   latency vs. injection rate curves that are critical for understanding
+//   NoC behavior under different load conditions and for performance sign-off.
 //
-// Test Procedure:
+// VERIFICATION PLAN MAPPING:
+//   - VERIFICATION_PLAN.md Section 1: Verification Objectives
+//     * Performance Targets: Latency <50 cycles average, <100 cycles p99
+//   - VERIFICATION_PLAN.md Section 2: Verification Levels
+//     * Performance: Latency, throughput, congestion analysis
+//   - VERIFICATION_PLAN.md Section 3: Test Strategy
+//     * Performance Tests: latency_under_load, percentile_analysis
+//     * Test Category: Performance
+//
+// PROTOCOL SPECIFICATION REFERENCES:
+//   - ARM AMBA 5 AXI4 Specification (ARM IHI 0022E)
+//     * Section 3.1: Transaction Protocol (latency defined as ARVALID to RLAST)
+//     * Section 3.1.1: Handshake Protocol (affects latency)
+//   - NoC Performance Specifications:
+//     * Target latency: <50 cycles average for GPU workloads
+//     * Target p99 latency: <100 cycles for real-time constraints
+//
+// TEST PROCEDURE:
 //   - Run uniform_traffic_sequence at multiple injection rates:
-//     * 10% injection rate (light load)
-//     * 20% injection rate
-//     * 50% injection rate (moderate load)
-//     * 80% injection rate (heavy load)
-//     * 95% injection rate (near saturation)
+//     * 10% injection rate (light load) - baseline performance
+//     * 20% injection rate - low contention
+//     * 50% injection rate (moderate load) - typical operating point
+//     * 80% injection rate (heavy load) - high contention
+//     * 95% injection rate (near saturation) - stress condition
+//   - Each injection rate runs for sufficient transactions to get statistical significance
 //
-// Measurements:
-//   - Average latency (cycles)
+// MEASUREMENTS:
+//   - Average latency (cycles): Mean end-to-end latency
 //   - Percentile latencies: p50 (median), p95, p99
-//   - Latency distribution histogram
+//   - Latency distribution histogram: Full latency distribution
+//   - Per-transaction-type latency: Read vs. write latency
 //
-// Expected Results:
-//   - Average latency < 50 cycles (under normal load)
-//   - p99 latency < 100 cycles
-//   - Latency increases gradually with injection rate
+// EXPECTED RESULTS:
+//   - Average latency < 50 cycles (under normal load, 50% injection rate)
+//   - p99 latency < 100 cycles (meets real-time GPU frame timing requirements)
+//   - Latency increases gradually with injection rate (no sudden jumps)
+//   - Latency curve shows smooth transition to saturation
+//   - Pass Criteria: All latency targets met, smooth latency curve
 //
-// Output:
-//   - Latency curve: injection_rate vs. latency
-//   - CSV file with latency statistics per injection rate
+// OUTPUT:
+//   - Latency curve: injection_rate vs. latency (CSV format)
+//   - Latency statistics file: Per injection rate statistics
+//   - Histogram data: Latency distribution per injection rate
+//   - Performance report: Summary with pass/fail status
+//
+// TEST REPRODUCIBILITY:
+//   - Seed: Configurable (use same seed for regression comparison)
+//   - Injection rates: Fixed set (10%, 20%, 50%, 80%, 95%)
+//   - Transaction count: 10,000 per injection rate
+//   - Self-contained: Complete performance characterization
 //
 class latency_characterization_test extends base_test;
 
@@ -863,22 +1014,66 @@ endclass
 // QoS Arbitration Test
 // ==============================================================================
 //
-// Objective: Verify QoS priority handling in arbiter. Tests that higher QoS
-// transactions receive preferential treatment.
+// TEST OBJECTIVE:
+//   Verify QoS (Quality of Service) priority handling in the NoC arbiter.
+//   This test ensures that higher QoS transactions receive preferential treatment,
+//   enabling real-time GPU workloads (graphics, compute) to meet timing deadlines
+//   while background tasks can still make progress.
 //
-// Sequences Used:
+// VERIFICATION PLAN MAPPING:
+//   - VERIFICATION_PLAN.md Section 1: Verification Objectives
+//     * Performance: QoS-based priority arbitration
+//   - VERIFICATION_PLAN.md Section 3: Test Strategy
+//     * QoS: priority_arbitration, fairness, SLA_guarantee
+//     * Test Category: QoS
+//   - VERIFICATION_PLAN.md Section 4: Coverage Strategy
+//     * Functional Coverage: All QoS levels (0-15) exercised
+//     * Cross-coverage: QoS × Latency bins
+//
+// PROTOCOL SPECIFICATION REFERENCES:
+//   - ARM AMBA 5 AXI4 Specification (ARM IHI 0022E)
+//     * Section 3.1.1: QoS Signals (awqos, arqos)
+//       - 4-bit QoS field: 0 = lowest priority, 15 = highest priority
+//       - QoS used for arbitration at each router
+//   - GPU NoC Specifications:
+//     * QoS 15: Graphics rendering (real-time, frame deadline)
+//     * QoS 8: Normal compute workloads
+//     * QoS 0: Background tasks (best-effort)
+//
+// SEQUENCES USED:
 //   - qos_priority_sequence: Vary QoS levels 0-15
+//     * Generates transactions with each QoS level
+//     * Measures latency per QoS level
+//     * Verifies priority ordering
 //
-// Measurements:
-//   - Latency by QoS level
-//   - Priority arbitration effectiveness
+// MEASUREMENTS:
+//   - Latency by QoS level: Average latency for each QoS (0-15)
+//   - Priority arbitration effectiveness: Latency improvement ratio
+//   - Fairness: Low QoS should still make progress (no starvation)
+//   - Latency distribution: p50, p95, p99 per QoS level
 //
-// Expected Results:
+// EXPECTED RESULTS:
 //   - Linear improvement in latency with increasing QoS
 //   - QoS 15 latency < QoS 8 latency < QoS 0 latency
+//   - Latency improvement: ~2x between QoS 0 and QoS 15
+//   - No starvation: QoS 0 transactions complete within timeout
+//   - Pass Criteria: QoS ordering maintained, no starvation
 //
-// Assertion:
+// ASSERTION:
 //   - high_qos_priority_assertion: High QoS transactions complete before low QoS
+//     * Property: If two transactions compete, higher QoS completes first
+//     * Verification: Monitor arbitration decisions at each router
+//
+// TEST REPRODUCIBILITY:
+//   - Seed: Configurable (use same seed for regression)
+//   - Transaction count: 1600 transactions (100 per QoS level)
+//   - Self-contained: Complete QoS verification
+//
+// USE CASE:
+//   GPU applications use QoS to prioritize:
+//   - Graphics rendering (QoS 15): Must meet frame deadlines
+//   - Compute kernels (QoS 8): Normal priority
+//   - Memory management (QoS 0): Background tasks
 //
 class qos_arbitration_test extends base_test;
 
@@ -977,32 +1172,78 @@ endclass
 // Deadlock Prevention Test
 // ==============================================================================
 //
-// Objective: Verify no deadlock occurs under random traffic over extended
-// periods. This is a critical test for NoC correctness.
+// TEST OBJECTIVE:
+//   Verify no deadlock occurs under random traffic over extended periods.
+//   This is a CRITICAL test for NoC correctness as deadlocks cause system
+//   hangs that are difficult to detect and debug. This test proves the NoC
+//   design is deadlock-free under realistic traffic conditions.
 //
-// Sequences Used:
+// VERIFICATION PLAN MAPPING:
+//   - VERIFICATION_PLAN.md Section 1: Verification Objectives
+//     * Deadlock-free operation: 10M+ cycles without hang
+//   - VERIFICATION_PLAN.md Section 2: Verification Levels
+//     * Formal: Mathematical proofs of deadlock-free, liveness
+//   - VERIFICATION_PLAN.md Section 3: Test Strategy
+//     * Stress Tests: 10M+ cycles, concurrent transactions
+//     * Formal: Bounded model checking, k-induction
+//     * Test Category: Deadlock
+//   - VERIFICATION_PLAN.md Section 5: Sign-Off Criteria
+//     * Deadlock-free property formally proved (bounded)
+//
+// PROTOCOL SPECIFICATION REFERENCES:
+//   - ARM AMBA 5 AXI4 Specification (ARM IHI 0022E)
+//     * Section 3.1.5: Transaction Ordering (out-of-order completion allowed)
+//   - NoC Routing Specifications:
+//     * XY routing algorithm: Proven deadlock-free for mesh topology
+//     * Virtual channel allocation: Prevents resource deadlock
+//     * Dateline mechanism: Prevents wraparound deadlock (torus topology)
+//
+// SEQUENCES USED:
 //   - random_traffic_sequence: Long-duration random traffic
+//     * Generates diverse traffic patterns that could potentially deadlock
+//     * Tests all source-destination pairs
+//     * Tests various burst lengths and QoS levels
 //
-// Duration:
-//   - Very long: 10M+ cycles
+// DURATION:
+//   - Very long: 10M+ cycles (hours of simulation)
+//   - Rationale: Deadlocks may take millions of cycles to manifest
+//   - Extended duration ensures thorough deadlock testing
 //
-// Measurements:
-//   - Transaction completion rate
-//   - Deadlock detection events
-//   - Timeout occurrences
+// MEASUREMENTS:
+//   - Transaction completion rate: Must be 100%
+//   - Deadlock detection events: Must be zero
+//   - Timeout occurrences: Must be zero
+//   - Transaction latency: Should remain bounded
+//   - Progress monitoring: Transactions must make forward progress
 //
-// Expected Results:
-//   - No timeout (all transactions complete)
-//   - All transactions eventually complete
-//   - No deadlock detected
+// EXPECTED RESULTS:
+//   - No timeout (all transactions complete within timeout window)
+//   - All transactions eventually complete (100% completion rate)
+//   - No deadlock detected by deadlock detection mechanisms
+//   - Transaction latency remains bounded (no unbounded growth)
+//   - Pass Criteria: Zero deadlocks, 100% transaction completion
 //
-// Configuration:
-//   - Enable deadlock timeout detection (e.g., 1000 cycles per transaction)
-//   - Log any suspicious patterns
+// CONFIGURATION:
+//   - Enable deadlock timeout detection: 1000 cycles per transaction
+//   - Enable progress monitoring: Check transaction progress every 100 cycles
+//   - Log any suspicious patterns: Long latency, no progress
 //   - Generate deadlock-free certificate if test passes
 //
-// Assertion:
+// ASSERTION:
 //   - deadlock_free_property: System remains live (formal property)
+//     * Property: Always eventually, all transactions complete
+//     * Verification: Formal verification tools (bounded model checking)
+//
+// TEST REPRODUCIBILITY:
+//   - Seed: Configurable (use multiple seeds for thorough testing)
+//   - Transaction count: 100,000 transactions
+//   - Duration: 10M cycles minimum
+//   - Self-contained: Complete deadlock verification
+//
+// IMPORTANCE:
+//   This test is CRITICAL for sign-off. A deadlock in production would cause
+//   system hangs that are extremely difficult to debug. This test provides
+//   confidence that the NoC design is deadlock-free.
 //
 class deadlock_prevention_test extends base_test;
 
@@ -1337,25 +1578,86 @@ endclass
 // Coverage Regression Test
 // ==============================================================================
 //
-// Objective: Achieve >85% functional coverage and >90% code coverage through
-// comprehensive sequence execution.
+// TEST OBJECTIVE:
+//   Achieve >85% functional coverage and >90% code coverage through comprehensive
+//   sequence execution across multiple random seeds. This test ensures thorough
+//   verification coverage and identifies any coverage gaps that need targeted
+//   sequences.
 //
-// Sequences Used:
-//   - Combination of all sequence types
+// VERIFICATION PLAN MAPPING:
+//   - VERIFICATION_PLAN.md Section 4: Coverage Strategy
+//     * Functional Coverage: Transaction types, address spaces, burst lengths,
+//       QoS levels, source/dest pairs, contention scenarios
+//     * Code Coverage: Statement >90%, Branch >85%, Condition >80%
+//     * Cross-coverage: Burst length × Transaction type, QoS × Latency bins
+//   - VERIFICATION_PLAN.md Section 5: Sign-Off Criteria
+//     * >85% functional coverage achieved
+//     * >90% statement, >85% branch code coverage
 //
-// Phases:
-//   - Run multiple seeds until coverage saturates
-//   - Identify coverage gaps
-//   - Create directed sequences for uncovered bins
+// PROTOCOL SPECIFICATION REFERENCES:
+//   - ARM AMBA 5 AXI4 Specification (ARM IHI 0022E)
+//     * All protocol features must be covered by functional coverage
+//   - Coverage Requirements:
+//     * All transaction types: READ, WRITE, ATOMIC operations
+//     * All burst lengths: 1-256 transfers
+//     * All QoS levels: 0-15
+//     * All response codes: OKAY, EXOKAY, SLVERR, DECERR
 //
-// Target:
-//   - 85%+ functional coverage
-//   - 90%+ code coverage
+// SEQUENCES USED:
+//   - Combination of all sequence types:
+//     * Functional sequences: single_write, single_read, write_read_pair
+//     * Protocol sequences: handshake, atomicity, response, burst
+//     * Performance sequences: uniform, random, hotspot
+//     * QoS sequences: priority, mixed load
+//     * Stress sequences: long duration, back-to-back
 //
-// If coverage gap remains after regression:
-//   - Identify uncovered bins
+// PHASES:
+//   Phase 1: Initial Coverage Collection
+//     - Run comprehensive sequence suite with seed 1
+//     - Collect initial coverage metrics
+//   Phase 2: Coverage Saturation
+//     - Run multiple seeds (seeds 1-10) until coverage saturates
+//     - Identify coverage gaps
+//   Phase 3: Targeted Coverage Closure
+//     - Create directed sequences for uncovered bins
+//     - Verify coverage points triggered
+//     - Re-run regression to confirm coverage closure
+//
+// TARGET COVERAGE:
+//   - Functional Coverage: 85%+ (all coverage bins)
+//   - Code Coverage: 90%+ statement, 85%+ branch, 80%+ condition
+//   - Cross-Coverage: Key combinations covered (burst × type, QoS × latency)
+//
+// COVERAGE GAP ANALYSIS:
+//   If coverage gap remains after regression:
+//   - Identify uncovered bins from coverage report
+//   - Analyze why bins are not covered (constraints, sequences, scenarios)
 //   - Create directed sequence targeting those bins
 //   - Verify coverage point triggered
+//   - Document coverage closure strategy
+//
+// EXPECTED RESULTS:
+//   - Functional coverage: 85%+ achieved
+//   - Code coverage: 90%+ statement, 85%+ branch
+//   - Coverage saturation: No significant increase after 10 seeds
+//   - Coverage gaps documented: Uncovered bins identified and addressed
+//   - Pass Criteria: All coverage targets met, gaps closed
+//
+// OUTPUT:
+//   - Coverage report: Functional and code coverage metrics
+//   - Coverage database: For regression comparison
+//   //   - Coverage gap analysis: Uncovered bins and closure plan
+//   - Coverage trend: Coverage vs. seed number
+//
+// TEST REPRODUCIBILITY:
+//   - Seeds: Multiple seeds (1-10) for coverage saturation
+//   - Transaction count: 50,000 transactions per seed
+//   - Self-contained: Complete coverage verification suite
+//
+// IMPORTANCE:
+//   Coverage closure is a critical sign-off criterion. This test ensures
+//   comprehensive verification and identifies any verification gaps that
+//   need attention before design sign-off.
 //
 class coverage_regression_test extends base_test;
 
