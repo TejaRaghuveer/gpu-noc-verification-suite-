@@ -255,14 +255,17 @@ sim_simple: compile
 			exit 1; \
 		fi; \
 	fi
-	@echo "=============================================================================="
-	@echo "Running simple test..."
-	@echo "=============================================================================="
-ifeq ($(SIMULATOR),vcs)
-	$(BUILD_DIR)/simv $(VCS_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_SIM_COV_OPTS),) +UVM_TESTNAME=simple_test
-else ifeq ($(SIMULATOR),questa)
-	vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=simple_test $(QUESTA_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_SIM_COV_OPTS),)
-endif
+	@# Set default test name if TEST not specified (allows override via TEST variable)
+	@# Note: +UVM_TESTNAME=$$TEST_NAME will override +UVM_TESTNAME=$(TEST) from VCS_SIM_OPTS/QUESTA_SIM_OPTS
+	@TEST_NAME=$${TEST:-simple_test}; \
+	echo "=============================================================================="; \
+	echo "Running simple test (TEST=$$TEST_NAME)..."; \
+	echo "=============================================================================="; \
+	if [ "$(SIMULATOR)" = "vcs" ]; then \
+		$(BUILD_DIR)/simv +UVM_TESTNAME=$$TEST_NAME $(VCS_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_SIM_COV_OPTS),); \
+	elif [ "$(SIMULATOR)" = "questa" ]; then \
+		vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=$$TEST_NAME $(QUESTA_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_SIM_COV_OPTS),); \
+	fi
 	@echo "Simulation complete. Log: $(LOG_DIR)/sim_simple_$(SEED).log"
 
 sim_random: compile
@@ -280,14 +283,17 @@ sim_random: compile
 			exit 1; \
 		fi; \
 	fi
-	@echo "=============================================================================="
-	@echo "Running random test (seed=$(SEED))..."
-	@echo "=============================================================================="
-ifeq ($(SIMULATOR),vcs)
-	$(BUILD_DIR)/simv $(VCS_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_SIM_COV_OPTS),) +UVM_TESTNAME=random_test
-else ifeq ($(SIMULATOR),questa)
-	vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=random_test $(QUESTA_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_SIM_COV_OPTS),)
-endif
+	@# Set default test name if TEST not specified (allows override via TEST variable)
+	@# Note: +UVM_TESTNAME=$$TEST_NAME will override +UVM_TESTNAME=$(TEST) from VCS_SIM_OPTS/QUESTA_SIM_OPTS
+	@TEST_NAME=$${TEST:-random_test}; \
+	echo "=============================================================================="; \
+	echo "Running random test (TEST=$$TEST_NAME, seed=$(SEED))..."; \
+	echo "=============================================================================="; \
+	if [ "$(SIMULATOR)" = "vcs" ]; then \
+		$(BUILD_DIR)/simv +UVM_TESTNAME=$$TEST_NAME $(VCS_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_SIM_COV_OPTS),); \
+	elif [ "$(SIMULATOR)" = "questa" ]; then \
+		vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=$$TEST_NAME $(QUESTA_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_SIM_COV_OPTS),); \
+	fi
 	@echo "Simulation complete. Log: $(LOG_DIR)/sim_random_$(SEED).log"
 
 sim_stress: compile
@@ -305,14 +311,17 @@ sim_stress: compile
 			exit 1; \
 		fi; \
 	fi
-	@echo "=============================================================================="
-	@echo "Running stress test..."
-	@echo "=============================================================================="
-ifeq ($(SIMULATOR),vcs)
-	$(BUILD_DIR)/simv $(VCS_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_SIM_COV_OPTS),) +UVM_TESTNAME=stress_test TIMEOUT=$(TIMEOUT)
-else ifeq ($(SIMULATOR),questa)
-	vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=stress_test $(QUESTA_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_SIM_COV_OPTS),)
-endif
+	@# Set default test name if TEST not specified (allows override via TEST variable)
+	@# Note: +UVM_TESTNAME=$$TEST_NAME will override +UVM_TESTNAME=$(TEST) from VCS_SIM_OPTS/QUESTA_SIM_OPTS
+	@TEST_NAME=$${TEST:-stress_test}; \
+	echo "=============================================================================="; \
+	echo "Running stress test (TEST=$$TEST_NAME)..."; \
+	echo "=============================================================================="; \
+	if [ "$(SIMULATOR)" = "vcs" ]; then \
+		$(BUILD_DIR)/simv +UVM_TESTNAME=$$TEST_NAME TIMEOUT=$(TIMEOUT) $(VCS_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(VCS_SIM_COV_OPTS),); \
+	elif [ "$(SIMULATOR)" = "questa" ]; then \
+		vsim -c -do "run -all; quit -f" work.top +UVM_TESTNAME=$$TEST_NAME TIMEOUT=$(TIMEOUT) $(QUESTA_SIM_OPTS) $(if $(filter yes,$(COVERAGE)),$(QUESTA_SIM_COV_OPTS),); \
+	fi
 	@echo "Simulation complete. Log: $(LOG_DIR)/sim_stress_$(SEED).log"
 
 sim_formal: compile
