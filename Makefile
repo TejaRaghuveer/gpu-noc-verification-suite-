@@ -70,8 +70,12 @@ RTL_FILES      := $(wildcard $(RTL_DIR)/*.sv) \
                   $(wildcard $(RTL_DIR)/*.v)
 
 # Testbench files
-TB_FILES       := $(wildcard $(TB_DIR)/**/*.sv) \
-                  $(wildcard $(TB_DIR)/*.sv)
+# Note: $(wildcard **/*.sv) doesn't work recursively in GNU Make (it's treated literally)
+# Use $(shell find ...) for recursive directory search
+# This finds all .sv files in TB_DIR and all subdirectories
+# The 2>/dev/null suppresses errors if TB_DIR doesn't exist yet
+# Works on Unix/Linux, macOS, WSL, Git Bash, and Cygwin
+TB_FILES       := $(shell find $(TB_DIR) -name "*.sv" 2>/dev/null || true)
 
 # Package files
 PKG_FILES      := $(wildcard $(PKG_DIR)/*.sv) \

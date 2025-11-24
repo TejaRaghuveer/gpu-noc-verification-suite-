@@ -1144,7 +1144,6 @@ make coverage_report
 - **Documentation**: Check `docs/` directory
 - **Examples**: See `tests/` directory for examples
 - **Issues**: Open an issue on GitHub
-- **Email**: Contact maintainers
 
 ---
 
@@ -1204,36 +1203,4 @@ This framework draws inspiration from verification methodologies used in product
 ### Community
 
 Thanks to all contributors and the verification community for feedback and improvements.
-
----
-
-## Contact and Support
-
-### Maintainers
-
-- **Verification Lead**: [Name] - [email]
-- **Technical Lead**: [Name] - [email]
-
-### Resources
-
-- **Documentation**: [Link to docs]
-- **Wiki**: [Link to wiki]
-- **Issue Tracker**: [Link to issues]
-- **Discussions**: [Link to discussions]
-
-### Commercial Support
-
-For commercial support, licensing, or custom development, please contact [email].
-
----
-
-**Last Updated**: January 2025
-
-**Version**: 1.0.0
-
-**Status**: Production Ready
-
----
-
-*Built with ❤️ for the GPU verification community*
 

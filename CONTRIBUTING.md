@@ -12,7 +12,6 @@ Thank you for your interest in contributing to the NVIDIA GPU Interconnect NoC V
 6. [Commit Guidelines](#commit-guidelines)
 7. [Pull Request Process](#pull-request-process)
 8. [Documentation](#documentation)
-9. [Questions and Support](#questions-and-support)
 
 ## Code of Conduct
 
@@ -364,21 +363,6 @@ How was this tested?
 - Include code examples
 - Keep documentation up to date
 - Use markdown formatting consistently
-
-## Questions and Support
-
-### Getting Help
-
-- **Issues**: Open an issue for bugs or feature requests
-- **Discussions**: Use discussions for questions
-- **Email**: Contact maintainers directly (if applicable)
-
-### Resources
-
-- UVM User Guide
-- SystemVerilog LRM
-- Project Wiki (if available)
-- Internal documentation
 
 ## License
 
